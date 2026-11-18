@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_ClassPlacement" name="Student Class Placement" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="Decision_ClassPlacement" name="Xếp cấp độ lớp học &amp; Học phí" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_Decision_ClassPlacement" hitPolicy="FIRST">
+      <input id="In_Score" label="Điểm thi đầu vào (0-100)">
+        <inputExpression id="InputExpr_In_Score" typeRef="double">
+          <text>placementScore</text>
+        </inputExpression>
+      </input>
+      <input id="In_Age" label="Độ tuổi">
+        <inputExpression id="InputExpr_In_Age" typeRef="integer">
+          <text>studentAge</text>
+        </inputExpression>
+      </input>
+      <input id="In_Shift" label="Khung giờ mong muốn">
+        <inputExpression id="InputExpr_In_Shift" typeRef="string">
+          <text>preferredShift</text>
+        </inputExpression>
+      </input>
+      <output id="Out_Level" label="Cấp độ lớp" name="classLevel" typeRef="string" />
+      <output id="Out_Fee" label="Học phí (VNĐ)" name="tuitionFeeVND" typeRef="long" />
+      <output id="Out_Cohort" label="Mã lớp dự kiến" name="assignedCohortCode" typeRef="string" />
+      <rule id="Rule_Decision_ClassPlacement_1">
+        <description>Học viên thiếu nhi &lt;= 12 tuổi</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_1_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_1_2">
+          <text>&lt;= 12</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_1_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_1_1">
+          <text>&quot;INTENSIVE_KIDS&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_1_2">
+          <text>4500000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_1_3">
+          <text>&quot;KID-A1&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ClassPlacement_2">
+        <description>Nền tảng - Lớp tối</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_2_1">
+          <text>&lt; 45</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_2_2">
+          <text>&gt; 12</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_2_3">
+          <text>&quot;EVENING&quot;</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_2_1">
+          <text>&quot;FOUNDATION&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_2_2">
+          <text>5500000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_2_3">
+          <text>&quot;FND-EVE-01&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ClassPlacement_3">
+        <description>Nền tảng - Lớp ban ngày/cuối tuần</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_3_1">
+          <text>&lt; 45</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_3_2">
+          <text>&gt; 12</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_3_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_3_1">
+          <text>&quot;FOUNDATION&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_3_2">
+          <text>5200000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_3_3">
+          <text>&quot;FND-WKD-01&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ClassPlacement_4">
+        <description>Trung cấp - Lớp tối</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_4_1">
+          <text>[45..74.9]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_4_2">
+          <text>&gt; 12</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_4_3">
+          <text>&quot;EVENING&quot;</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_4_1">
+          <text>&quot;INTERMEDIATE&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_4_2">
+          <text>6800000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_4_3">
+          <text>&quot;INT-EVE-02&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ClassPlacement_5">
+        <description>Trung cấp - Lớp thường</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_5_1">
+          <text>[45..74.9]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_5_2">
+          <text>&gt; 12</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_5_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_5_1">
+          <text>&quot;INTERMEDIATE&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_5_2">
+          <text>6500000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_5_3">
+          <text>&quot;INT-DAY-02&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ClassPlacement_6">
+        <description>Nâng cao &gt;= 75 điểm</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_6_1">
+          <text>&gt;= 75</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_6_2">
+          <text>&gt; 12</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ClassPlacement_6_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_6_1">
+          <text>&quot;ADVANCED&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_6_2">
+          <text>7900000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ClassPlacement_6_3">
+          <text>&quot;ADV-01&quot;</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_Definitions_ClassPlacement">
+      <dmndi:DMNShape id="DMNShape_Decision_ClassPlacement" dmnElementRef="Decision_ClassPlacement">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

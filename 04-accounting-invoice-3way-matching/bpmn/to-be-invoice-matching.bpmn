@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_Process_Invoice_ToBe" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:message id="Message_InvoiceEmail" name="InvoiceEmailReceived" />
+  <bpmn:collaboration id="Collaboration_Process_Invoice_ToBe">
+    <bpmn:participant id="Participant_External_Process_Invoice_ToBe" name="Email Nhà cung cấp, Cổng Thuế (TCT) &amp; ERP (PO / GRN)" />
+    <bpmn:participant id="Participant_Process_Invoice_ToBe" name="Hệ thống Tự động Đối chiếu Hóa đơn 3 bên (To-Be)" processRef="Process_Invoice_ToBe" />
+    <bpmn:messageFlow id="MF4_1" name="Email hóa đơn điện tử" sourceRef="Participant_External_Process_Invoice_ToBe" targetRef="Start_P4_Email" />
+    <bpmn:messageFlow id="MF4_2" name="Kiểm tra MST TCT" sourceRef="ST_P4_CheckTaxAPI" targetRef="Participant_External_Process_Invoice_ToBe" />
+    <bpmn:messageFlow id="MF4_3" name="Lấy PO / GRN từ ERP" sourceRef="ST_P4_FetchPOGRN" targetRef="Participant_External_Process_Invoice_ToBe" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Invoice_ToBe" name="Kế toán: Xử lý Hóa đơn Đầu vào &amp; Đối chiếu 3 bên (To-Be)" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:laneSet id="LaneSet_Process_Invoice_ToBe">
+      <bpmn:lane id="Lane_P4_Auto" name="Hệ thống Điều phối (Camunda + OCR/Tax API/ERP)">
+        <bpmn:flowNodeRef>Start_P4_Email</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P4_FileType</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P4_ParseXML</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P4_OCR</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P4_ParseJoin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P4_CheckTaxAPI</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P4_FetchPOGRN</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>BRT_P4_MatchDMN</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P4_STP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P4_RejectInv</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P4_Rejected</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P4_SchedulePay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P4_ToBe</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P4_APTeam" name="Kế toán Thanh toán (Xử lý ngoại lệ)">
+        <bpmn:flowNodeRef>UT_P4_Exception</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P4_ApproveEx</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_P4_Email" name="Nhận email đính kèm hóa đơn">
+      <bpmn:outgoing>FT4_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Start_P4_Email" messageRef="Message_InvoiceEmail" />
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="GW_P4_FileType" name="Định dạng file?">
+      <bpmn:incoming>FT4_1</bpmn:incoming>
+      <bpmn:outgoing>FT4_2</bpmn:outgoing>
+      <bpmn:outgoing>FT4_3</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ST_P4_ParseXML" name="Bóc tách XML &amp; kiểm tra chữ ký số" camunda:type="external" camunda:topic="invoice-xml-parser">
+      <bpmn:incoming>FT4_2</bpmn:incoming>
+      <bpmn:outgoing>FT4_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ST_P4_OCR" name="Trích xuất dữ liệu hóa đơn PDF (OCR)" camunda:type="external" camunda:topic="invoice-ocr-extractor">
+      <bpmn:incoming>FT4_3</bpmn:incoming>
+      <bpmn:outgoing>FT4_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="GW_P4_ParseJoin">
+      <bpmn:incoming>FT4_4</bpmn:incoming>
+      <bpmn:incoming>FT4_5</bpmn:incoming>
+      <bpmn:outgoing>FT4_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ST_P4_CheckTaxAPI" name="Gọi API kiểm tra MST nhà cung cấp" camunda:type="external" camunda:topic="tax-mst-verification">
+      <bpmn:incoming>FT4_6</bpmn:incoming>
+      <bpmn:outgoing>FT4_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ST_P4_FetchPOGRN" name="Truy vấn PO &amp; Phiếu nhập kho (GRN)" camunda:type="external" camunda:topic="erp-fetch-po-grn">
+      <bpmn:incoming>FT4_7</bpmn:incoming>
+      <bpmn:outgoing>FT4_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:businessRuleTask id="BRT_P4_MatchDMN" name="DMN Đối chiếu 3 bên &amp; ngưỡng sai số" camunda:resultVariable="matchDecision" camunda:decisionRef="Decision_InvoiceTolerance" camunda:mapDecisionResult="singleResult">
+      <bpmn:incoming>FT4_8</bpmn:incoming>
+      <bpmn:outgoing>FT4_9</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:exclusiveGateway id="GW_P4_STP" name="Khớp 3 bên (STP)?">
+      <bpmn:incoming>FT4_9</bpmn:incoming>
+      <bpmn:outgoing>FT4_10</bpmn:outgoing>
+      <bpmn:outgoing>FT4_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UT_P4_Exception" name="Kế toán xử lý sai lệch &amp; liên hệ NCC" camunda:candidateGroups="ap_accountants" camunda:formKey="camunda-forms:app:forms/invoice-exception.form">
+      <bpmn:incoming>FT4_11</bpmn:incoming>
+      <bpmn:outgoing>FT4_12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_P4_ApproveEx" name="Chấp nhận thanh toán?">
+      <bpmn:incoming>FT4_12</bpmn:incoming>
+      <bpmn:outgoing>FT4_13</bpmn:outgoing>
+      <bpmn:outgoing>FT4_14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ST_P4_RejectInv" name="Gửi thông báo từ chối hóa đơn cho NCC" camunda:type="external" camunda:topic="notify-vendor-reject-invoice">
+      <bpmn:incoming>FT4_14</bpmn:incoming>
+      <bpmn:outgoing>FT4_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_P4_Rejected" name="Hóa đơn bị từ chối">
+      <bpmn:incoming>FT4_15</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ST_P4_SchedulePay" name="Hạch toán &amp; lên lịch thanh toán ERP" camunda:type="external" camunda:topic="erp-schedule-payment">
+      <bpmn:incoming>FT4_10</bpmn:incoming>
+      <bpmn:incoming>FT4_13</bpmn:incoming>
+      <bpmn:outgoing>FT4_16</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_P4_ToBe" name="Hoàn tất xử lý hóa đơn">
+      <bpmn:incoming>FT4_16</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="FT4_1" sourceRef="Start_P4_Email" targetRef="GW_P4_FileType" />
+    <bpmn:sequenceFlow id="FT4_2" name="XML" sourceRef="GW_P4_FileType" targetRef="ST_P4_ParseXML">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${fileType == 'XML'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="FT4_3" name="PDF" sourceRef="GW_P4_FileType" targetRef="ST_P4_OCR">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${fileType == 'PDF'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="FT4_4" sourceRef="ST_P4_ParseXML" targetRef="GW_P4_ParseJoin" />
+    <bpmn:sequenceFlow id="FT4_5" sourceRef="ST_P4_OCR" targetRef="GW_P4_ParseJoin" />
+    <bpmn:sequenceFlow id="FT4_6" sourceRef="GW_P4_ParseJoin" targetRef="ST_P4_CheckTaxAPI" />
+    <bpmn:sequenceFlow id="FT4_7" sourceRef="ST_P4_CheckTaxAPI" targetRef="ST_P4_FetchPOGRN" />
+    <bpmn:sequenceFlow id="FT4_8" sourceRef="ST_P4_FetchPOGRN" targetRef="BRT_P4_MatchDMN" />
+    <bpmn:sequenceFlow id="FT4_9" sourceRef="BRT_P4_MatchDMN" targetRef="GW_P4_STP" />
+    <bpmn:sequenceFlow id="FT4_10" name="Khớp 100% / Trong ngưỡng (STP)" sourceRef="GW_P4_STP" targetRef="ST_P4_SchedulePay">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${matchDecision.allowStp == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="FT4_11" name="Sai lệch / Thiếu GRN" sourceRef="GW_P4_STP" targetRef="UT_P4_Exception">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${matchDecision.allowStp == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="FT4_12" sourceRef="UT_P4_Exception" targetRef="GW_P4_ApproveEx" />
+    <bpmn:sequenceFlow id="FT4_13" name="Chấp nhận sau đối soát" sourceRef="GW_P4_ApproveEx" targetRef="ST_P4_SchedulePay">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${exceptionApproved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="FT4_14" name="Từ chối" sourceRef="GW_P4_ApproveEx" targetRef="ST_P4_RejectInv">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${exceptionApproved == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="FT4_15" sourceRef="ST_P4_RejectInv" targetRef="End_P4_Rejected" />
+    <bpmn:sequenceFlow id="FT4_16" sourceRef="ST_P4_SchedulePay" targetRef="End_P4_ToBe" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Invoice_ToBe">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Invoice_ToBe" bpmnElement="Collaboration_Process_Invoice_ToBe">
+      <bpmndi:BPMNShape id="Participant_External_Process_Invoice_ToBe_di" bpmnElement="Participant_External_Process_Invoice_ToBe" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="2038" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Process_Invoice_ToBe_di" bpmnElement="Participant_Process_Invoice_ToBe" isHorizontal="true">
+        <dc:Bounds x="160" y="170" width="2038" height="525" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P4_Auto_di" bpmnElement="Lane_P4_Auto" isHorizontal="true">
+        <dc:Bounds x="190" y="170" width="2008" height="335" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P4_APTeam_di" bpmnElement="Lane_P4_APTeam" isHorizontal="true">
+        <dc:Bounds x="190" y="505" width="2008" height="190" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_P4_Email_di" bpmnElement="Start_P4_Email">
+        <dc:Bounds x="232" y="314" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P4_FileType_di" bpmnElement="GW_P4_FileType">
+        <dc:Bounds x="400" y="308" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P4_ParseXML_di" bpmnElement="ST_P4_ParseXML">
+        <dc:Bounds x="545" y="225" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P4_OCR_di" bpmnElement="ST_P4_OCR">
+        <dc:Bounds x="545" y="360" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P4_ParseJoin_di" bpmnElement="GW_P4_ParseJoin">
+        <dc:Bounds x="750" y="308" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P4_CheckTaxAPI_di" bpmnElement="ST_P4_CheckTaxAPI">
+        <dc:Bounds x="895" y="292" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P4_FetchPOGRN_di" bpmnElement="ST_P4_FetchPOGRN">
+        <dc:Bounds x="1070" y="292" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BRT_P4_MatchDMN_di" bpmnElement="BRT_P4_MatchDMN">
+        <dc:Bounds x="1245" y="292" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P4_STP_di" bpmnElement="GW_P4_STP">
+        <dc:Bounds x="1450" y="308" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P4_Exception_di" bpmnElement="UT_P4_Exception">
+        <dc:Bounds x="1420" y="560" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P4_ApproveEx_di" bpmnElement="GW_P4_ApproveEx">
+        <dc:Bounds x="1625" y="575" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P4_RejectInv_di" bpmnElement="ST_P4_RejectInv">
+        <dc:Bounds x="1595" y="374" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P4_Rejected_di" bpmnElement="End_P4_Rejected">
+        <dc:Bounds x="1807" y="396" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P4_SchedulePay_di" bpmnElement="ST_P4_SchedulePay">
+        <dc:Bounds x="1805" y="238" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P4_ToBe_di" bpmnElement="End_P4_ToBe">
+        <dc:Bounds x="2052" y="260" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="FT4_1_di" bpmnElement="FT4_1">
+        <di:waypoint x="268" y="332" />
+        <di:waypoint x="400" y="332" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_2_di" bpmnElement="FT4_2">
+        <di:waypoint x="450" y="333" />
+        <di:waypoint x="498" y="333" />
+        <di:waypoint x="498" y="265" />
+        <di:waypoint x="545" y="265" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_3_di" bpmnElement="FT4_3">
+        <di:waypoint x="450" y="333" />
+        <di:waypoint x="498" y="333" />
+        <di:waypoint x="498" y="400" />
+        <di:waypoint x="545" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_4_di" bpmnElement="FT4_4">
+        <di:waypoint x="655" y="265" />
+        <di:waypoint x="702" y="265" />
+        <di:waypoint x="702" y="333" />
+        <di:waypoint x="750" y="333" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_5_di" bpmnElement="FT4_5">
+        <di:waypoint x="655" y="400" />
+        <di:waypoint x="702" y="400" />
+        <di:waypoint x="702" y="333" />
+        <di:waypoint x="750" y="333" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_6_di" bpmnElement="FT4_6">
+        <di:waypoint x="800" y="333" />
+        <di:waypoint x="895" y="333" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_7_di" bpmnElement="FT4_7">
+        <di:waypoint x="1005" y="332" />
+        <di:waypoint x="1070" y="332" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_8_di" bpmnElement="FT4_8">
+        <di:waypoint x="1180" y="332" />
+        <di:waypoint x="1245" y="332" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_9_di" bpmnElement="FT4_9">
+        <di:waypoint x="1355" y="332" />
+        <di:waypoint x="1450" y="332" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_10_di" bpmnElement="FT4_10">
+        <di:waypoint x="1500" y="333" />
+        <di:waypoint x="1652" y="333" />
+        <di:waypoint x="1652" y="278" />
+        <di:waypoint x="1805" y="278" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_11_di" bpmnElement="FT4_11">
+        <di:waypoint x="1475" y="358" />
+        <di:waypoint x="1475" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_12_di" bpmnElement="FT4_12">
+        <di:waypoint x="1530" y="600" />
+        <di:waypoint x="1625" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_13_di" bpmnElement="FT4_13">
+        <di:waypoint x="1675" y="600" />
+        <di:waypoint x="1740" y="600" />
+        <di:waypoint x="1740" y="278" />
+        <di:waypoint x="1805" y="278" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_14_di" bpmnElement="FT4_14">
+        <di:waypoint x="1650" y="575" />
+        <di:waypoint x="1650" y="454" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_15_di" bpmnElement="FT4_15">
+        <di:waypoint x="1705" y="414" />
+        <di:waypoint x="1807" y="414" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT4_16_di" bpmnElement="FT4_16">
+        <di:waypoint x="1915" y="278" />
+        <di:waypoint x="2052" y="278" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF4_1_di" bpmnElement="MF4_1">
+        <di:waypoint x="250" y="120" />
+        <di:waypoint x="250" y="314" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF4_2_di" bpmnElement="MF4_2">
+        <di:waypoint x="950" y="292" />
+        <di:waypoint x="950" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF4_3_di" bpmnElement="MF4_3">
+        <di:waypoint x="1125" y="292" />
+        <di:waypoint x="1125" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

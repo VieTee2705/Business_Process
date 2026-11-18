@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_Process_Approval_AsIs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_Process_Approval_AsIs">
+    <bpmn:participant id="Participant_Process_Approval_AsIs" name="Quy trình Trình ký Phê duyệt Hiện tại (As-Is)" processRef="Process_Approval_AsIs" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Approval_AsIs" name="Quản trị nội bộ: Phê duyệt Đa cấp &amp; Cấp phát Tài nguyên (As-Is)" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_Approval_AsIs">
+      <bpmn:lane id="Lane_P5_Requester" name="Nhân viên Đề xuất">
+        <bpmn:flowNodeRef>Start_P5_AsIs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P5_PaperForm</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P5_Managers" name="Quản lý các cấp (TBP / KTT / BGĐ)">
+        <bpmn:flowNodeRef>UT_P5_HeadSign</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P5_AccSign</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P5_DirSign</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P5_ITAdmin" name="IT / Hành chính / Tài chính">
+        <bpmn:flowNodeRef>UT_P5_ManualProv</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P5_AsIs</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_P5_AsIs" name="Có nhu cầu chi phí / cấp quyền">
+      <bpmn:outgoing>F5_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="UT_P5_PaperForm" name="Điền phiếu giấy / gửi email đề xuất">
+      <bpmn:incoming>F5_1</bpmn:incoming>
+      <bpmn:outgoing>F5_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P5_HeadSign" name="Trình ký Trưởng bộ phận (dễ ngâm hồ sơ)">
+      <bpmn:incoming>F5_2</bpmn:incoming>
+      <bpmn:outgoing>F5_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P5_AccSign" name="Chuyển giấy sang Kế toán trưởng ký">
+      <bpmn:incoming>F5_3</bpmn:incoming>
+      <bpmn:outgoing>F5_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P5_DirSign" name="Trình Ban Giám đốc ký (nếu vượt hạn mức)">
+      <bpmn:incoming>F5_4</bpmn:incoming>
+      <bpmn:outgoing>F5_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P5_ManualProv" name="Nhập tay cấp quyền IAM / tài sản / lệnh chi">
+      <bpmn:incoming>F5_5</bpmn:incoming>
+      <bpmn:outgoing>F5_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_P5_AsIs" name="Hoàn tất cấp phát">
+      <bpmn:incoming>F5_6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F5_1" sourceRef="Start_P5_AsIs" targetRef="UT_P5_PaperForm" />
+    <bpmn:sequenceFlow id="F5_2" sourceRef="UT_P5_PaperForm" targetRef="UT_P5_HeadSign" />
+    <bpmn:sequenceFlow id="F5_3" sourceRef="UT_P5_HeadSign" targetRef="UT_P5_AccSign" />
+    <bpmn:sequenceFlow id="F5_4" sourceRef="UT_P5_AccSign" targetRef="UT_P5_DirSign" />
+    <bpmn:sequenceFlow id="F5_5" sourceRef="UT_P5_DirSign" targetRef="UT_P5_ManualProv" />
+    <bpmn:sequenceFlow id="F5_6" sourceRef="UT_P5_ManualProv" targetRef="End_P5_AsIs" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Approval_AsIs">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Approval_AsIs" bpmnElement="Collaboration_Process_Approval_AsIs">
+      <bpmndi:BPMNShape id="Participant_Process_Approval_AsIs_di" bpmnElement="Participant_Process_Approval_AsIs" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1268" height="510" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P5_Requester_di" bpmnElement="Lane_P5_Requester" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1238" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P5_Managers_di" bpmnElement="Lane_P5_Managers" isHorizontal="true">
+        <dc:Bounds x="190" y="250" width="1238" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P5_ITAdmin_di" bpmnElement="Lane_P5_ITAdmin" isHorizontal="true">
+        <dc:Bounds x="190" y="420" width="1238" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_P5_AsIs_di" bpmnElement="Start_P5_AsIs">
+        <dc:Bounds x="232" y="157" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P5_PaperForm_di" bpmnElement="UT_P5_PaperForm">
+        <dc:Bounds x="370" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P5_HeadSign_di" bpmnElement="UT_P5_HeadSign">
+        <dc:Bounds x="545" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P5_AccSign_di" bpmnElement="UT_P5_AccSign">
+        <dc:Bounds x="720" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P5_DirSign_di" bpmnElement="UT_P5_DirSign">
+        <dc:Bounds x="895" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P5_ManualProv_di" bpmnElement="UT_P5_ManualProv">
+        <dc:Bounds x="1070" y="475" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P5_AsIs_di" bpmnElement="End_P5_AsIs">
+        <dc:Bounds x="1282" y="497" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F5_1_di" bpmnElement="F5_1">
+        <di:waypoint x="268" y="175" />
+        <di:waypoint x="370" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_2_di" bpmnElement="F5_2">
+        <di:waypoint x="480" y="175" />
+        <di:waypoint x="512" y="175" />
+        <di:waypoint x="512" y="345" />
+        <di:waypoint x="545" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_3_di" bpmnElement="F5_3">
+        <di:waypoint x="655" y="345" />
+        <di:waypoint x="720" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_4_di" bpmnElement="F5_4">
+        <di:waypoint x="830" y="345" />
+        <di:waypoint x="895" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_5_di" bpmnElement="F5_5">
+        <di:waypoint x="1005" y="345" />
+        <di:waypoint x="1038" y="345" />
+        <di:waypoint x="1038" y="515" />
+        <di:waypoint x="1070" y="515" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_6_di" bpmnElement="F5_6">
+        <di:waypoint x="1180" y="515" />
+        <di:waypoint x="1282" y="515" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

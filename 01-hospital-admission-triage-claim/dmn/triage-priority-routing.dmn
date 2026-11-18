@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_TriagePriority" name="Hospital Triage &amp; Routing" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="Decision_TriagePriority" name="Phân luồng mức độ ưu tiên &amp; Phòng khám" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_Decision_TriagePriority" hitPolicy="FIRST">
+      <input id="In_SpO2" label="SpO2 (%)">
+        <inputExpression id="InputExpr_In_SpO2" typeRef="integer">
+          <text>spo2</text>
+        </inputExpression>
+      </input>
+      <input id="In_HR" label="Nhịp tim (bpm)">
+        <inputExpression id="InputExpr_In_HR" typeRef="integer">
+          <text>heartRate</text>
+        </inputExpression>
+      </input>
+      <input id="In_Temp" label="Nhiệt độ (°C)">
+        <inputExpression id="InputExpr_In_Temp" typeRef="double">
+          <text>temperature</text>
+        </inputExpression>
+      </input>
+      <input id="In_Pain" label="Điểm đau (1-10)">
+        <inputExpression id="InputExpr_In_Pain" typeRef="integer">
+          <text>painScore</text>
+        </inputExpression>
+      </input>
+      <input id="In_Sym" label="Nhóm triệu chứng">
+        <inputExpression id="InputExpr_In_Sym" typeRef="string">
+          <text>symptomGroup</text>
+        </inputExpression>
+      </input>
+      <output id="Out_Pri" label="Mức độ ưu tiên" name="priorityLevel" typeRef="string" />
+      <output id="Out_Dept" label="Chuyên khoa" name="assignedDepartment" typeRef="string" />
+      <output id="Out_Room" label="Mã phòng" name="targetRoomCode" typeRef="string" />
+      <output id="Out_SLA" label="SLA tiếp nhận (phút)" name="slaMinutes" typeRef="integer" />
+      <rule id="Rule_Decision_TriagePriority_1">
+        <description>Suy hô hấp cấp (SpO2 &lt; 92%)</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_1_1">
+          <text>&lt; 92</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_1_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_1_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_1_4">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_1_5">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_1_1">
+          <text>&quot;EMERGENCY&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_1_2">
+          <text>&quot;CAP_CUU&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_1_3">
+          <text>&quot;ER-01&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_1_4">
+          <text>2</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TriagePriority_2">
+        <description>Nguy cơ tim mạch / đau dữ dội</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_2_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_2_2">
+          <text>&gt; 130</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_2_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_2_4">
+          <text>&gt;= 8</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_2_5">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_2_1">
+          <text>&quot;EMERGENCY&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_2_2">
+          <text>&quot;CAP_CUU&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_2_3">
+          <text>&quot;ER-01&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_2_4">
+          <text>2</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TriagePriority_3">
+        <description>Trẻ sốt cao &gt;= 39.5°C</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_3_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_3_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_3_3">
+          <text>&gt;= 39.5</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_3_4">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_3_5">
+          <text>&quot;PEDIATRIC&quot;</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_3_1">
+          <text>&quot;PRIORITY&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_3_2">
+          <text>&quot;NHI_KHOA&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_3_3">
+          <text>&quot;PED-02&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_3_4">
+          <text>10</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TriagePriority_4">
+        <description>Đau ngực / triệu chứng tim mạch</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_4_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_4_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_4_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_4_4">
+          <text>&gt;= 6</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_4_5">
+          <text>&quot;CARDIOLOGY&quot;</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_4_1">
+          <text>&quot;PRIORITY&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_4_2">
+          <text>&quot;TIM_MACH&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_4_3">
+          <text>&quot;CARD-01&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_4_4">
+          <text>10</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TriagePriority_5">
+        <description>Khám nội tổng quát thường quy</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_5_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_5_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_5_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_5_4">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_5_5">
+          <text>&quot;INTERNAL_MED&quot;</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_5_1">
+          <text>&quot;STANDARD&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_5_2">
+          <text>&quot;NOI_TONG_QUAT&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_5_3">
+          <text>&quot;INT-03&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_5_4">
+          <text>30</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TriagePriority_6">
+        <description>Mặc định khám thường</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_6_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_6_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_6_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_6_4">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TriagePriority_6_5">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_6_1">
+          <text>&quot;STANDARD&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_6_2">
+          <text>&quot;KHAM_TONG_QUAT&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_6_3">
+          <text>&quot;GEN-01&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TriagePriority_6_4">
+          <text>30</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_Definitions_TriagePriority">
+      <dmndi:DMNShape id="DMNShape_Decision_TriagePriority" dmnElementRef="Decision_TriagePriority">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

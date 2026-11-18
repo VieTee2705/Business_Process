@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_Process_Enrollment_AsIs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_Process_Enrollment_AsIs">
+    <bpmn:participant id="Participant_Process_Enrollment_AsIs" name="Quy trình Tuyển sinh Hiện tại (As-Is)" processRef="Process_Enrollment_AsIs" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Enrollment_AsIs" name="Trường học: Tuyển sinh, Kiểm tra đầu vào &amp; Nhập học (As-Is)" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_Enrollment_AsIs">
+      <bpmn:lane id="Lane_P2_Consult" name="Tư vấn Tuyển sinh">
+        <bpmn:flowNodeRef>Start_P2_AsIs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P2_Excel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P2_CallTest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P2_ManualLevel</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P2_Academic" name="Giáo vụ &amp; Giảng viên">
+        <bpmn:flowNodeRef>UT_P2_Grade</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P2_CreateSIS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P2_CreateLMS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P2_AsIs</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P2_Finance" name="Kế toán">
+        <bpmn:flowNodeRef>UT_P2_CheckBank</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P2_Paid</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_P2_AsIs" name="Nhận form / tin nhắn đăng ký">
+      <bpmn:outgoing>F2_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="UT_P2_Excel" name="Nhập tay hồ sơ vào bảng Excel">
+      <bpmn:incoming>F2_1</bpmn:incoming>
+      <bpmn:outgoing>F2_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P2_CallTest" name="Gọi điện xếp lịch thi đầu vào">
+      <bpmn:incoming>F2_2</bpmn:incoming>
+      <bpmn:outgoing>F2_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P2_Grade" name="Tổ chức thi &amp; chấm điểm thủ công">
+      <bpmn:incoming>F2_3</bpmn:incoming>
+      <bpmn:outgoing>F2_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P2_ManualLevel" name="Xếp lớp thủ công &amp; nhắn tin báo học phí">
+      <bpmn:incoming>F2_4</bpmn:incoming>
+      <bpmn:outgoing>F2_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P2_CheckBank" name="Kiểm tra sao kê &amp; nhắc đóng học phí thủ công">
+      <bpmn:incoming>F2_5</bpmn:incoming>
+      <bpmn:incoming>F2_8</bpmn:incoming>
+      <bpmn:outgoing>F2_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_P2_Paid" name="Đã đóng tiền?">
+      <bpmn:incoming>F2_6</bpmn:incoming>
+      <bpmn:outgoing>F2_7</bpmn:outgoing>
+      <bpmn:outgoing>F2_8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UT_P2_CreateSIS" name="Nhập tay tạo mã HV trên SIS">
+      <bpmn:incoming>F2_7</bpmn:incoming>
+      <bpmn:outgoing>F2_9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P2_CreateLMS" name="Tạo tài khoản LMS &amp; gửi email thủ công">
+      <bpmn:incoming>F2_9</bpmn:incoming>
+      <bpmn:outgoing>F2_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_P2_AsIs" name="Hoàn tất nhập học">
+      <bpmn:incoming>F2_10</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F2_1" sourceRef="Start_P2_AsIs" targetRef="UT_P2_Excel" />
+    <bpmn:sequenceFlow id="F2_2" sourceRef="UT_P2_Excel" targetRef="UT_P2_CallTest" />
+    <bpmn:sequenceFlow id="F2_3" sourceRef="UT_P2_CallTest" targetRef="UT_P2_Grade" />
+    <bpmn:sequenceFlow id="F2_4" sourceRef="UT_P2_Grade" targetRef="UT_P2_ManualLevel" />
+    <bpmn:sequenceFlow id="F2_5" sourceRef="UT_P2_ManualLevel" targetRef="UT_P2_CheckBank" />
+    <bpmn:sequenceFlow id="F2_6" sourceRef="UT_P2_CheckBank" targetRef="GW_P2_Paid" />
+    <bpmn:sequenceFlow id="F2_7" name="Đã thanh toán" sourceRef="GW_P2_Paid" targetRef="UT_P2_CreateSIS" />
+    <bpmn:sequenceFlow id="F2_8" name="Chưa thanh toán (nhắc lại)" sourceRef="GW_P2_Paid" targetRef="UT_P2_CheckBank" />
+    <bpmn:sequenceFlow id="F2_9" sourceRef="UT_P2_CreateSIS" targetRef="UT_P2_CreateLMS" />
+    <bpmn:sequenceFlow id="F2_10" sourceRef="UT_P2_CreateLMS" targetRef="End_P2_AsIs" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Enrollment_AsIs">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Enrollment_AsIs" bpmnElement="Collaboration_Process_Enrollment_AsIs">
+      <bpmndi:BPMNShape id="Participant_Process_Enrollment_AsIs_di" bpmnElement="Participant_Process_Enrollment_AsIs" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1793" height="540" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P2_Consult_di" bpmnElement="Lane_P2_Consult" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1763" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P2_Academic_di" bpmnElement="Lane_P2_Academic" isHorizontal="true">
+        <dc:Bounds x="190" y="250" width="1763" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P2_Finance_di" bpmnElement="Lane_P2_Finance" isHorizontal="true">
+        <dc:Bounds x="190" y="420" width="1763" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_P2_AsIs_di" bpmnElement="Start_P2_AsIs">
+        <dc:Bounds x="232" y="157" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P2_Excel_di" bpmnElement="UT_P2_Excel">
+        <dc:Bounds x="370" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P2_CallTest_di" bpmnElement="UT_P2_CallTest">
+        <dc:Bounds x="545" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P2_Grade_di" bpmnElement="UT_P2_Grade">
+        <dc:Bounds x="720" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P2_ManualLevel_di" bpmnElement="UT_P2_ManualLevel">
+        <dc:Bounds x="895" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P2_CheckBank_di" bpmnElement="UT_P2_CheckBank">
+        <dc:Bounds x="1070" y="475" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P2_Paid_di" bpmnElement="GW_P2_Paid">
+        <dc:Bounds x="1275" y="490" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P2_CreateSIS_di" bpmnElement="UT_P2_CreateSIS">
+        <dc:Bounds x="1420" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P2_CreateLMS_di" bpmnElement="UT_P2_CreateLMS">
+        <dc:Bounds x="1595" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P2_AsIs_di" bpmnElement="End_P2_AsIs">
+        <dc:Bounds x="1807" y="327" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F2_1_di" bpmnElement="F2_1">
+        <di:waypoint x="268" y="175" />
+        <di:waypoint x="370" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_2_di" bpmnElement="F2_2">
+        <di:waypoint x="480" y="175" />
+        <di:waypoint x="545" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_3_di" bpmnElement="F2_3">
+        <di:waypoint x="655" y="175" />
+        <di:waypoint x="688" y="175" />
+        <di:waypoint x="688" y="345" />
+        <di:waypoint x="720" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_4_di" bpmnElement="F2_4">
+        <di:waypoint x="830" y="345" />
+        <di:waypoint x="862" y="345" />
+        <di:waypoint x="862" y="175" />
+        <di:waypoint x="895" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_5_di" bpmnElement="F2_5">
+        <di:waypoint x="1005" y="175" />
+        <di:waypoint x="1038" y="175" />
+        <di:waypoint x="1038" y="515" />
+        <di:waypoint x="1070" y="515" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_6_di" bpmnElement="F2_6">
+        <di:waypoint x="1180" y="515" />
+        <di:waypoint x="1275" y="515" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_7_di" bpmnElement="F2_7">
+        <di:waypoint x="1325" y="515" />
+        <di:waypoint x="1372" y="515" />
+        <di:waypoint x="1372" y="345" />
+        <di:waypoint x="1420" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_8_di" bpmnElement="F2_8">
+        <di:waypoint x="1325" y="515" />
+        <di:waypoint x="1325" y="600" />
+        <di:waypoint x="1125" y="600" />
+        <di:waypoint x="1125" y="555" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_9_di" bpmnElement="F2_9">
+        <di:waypoint x="1530" y="345" />
+        <di:waypoint x="1595" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_10_di" bpmnElement="F2_10">
+        <di:waypoint x="1705" y="345" />
+        <di:waypoint x="1807" y="345" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

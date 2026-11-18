@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_Process_Attendance_AsIs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_Process_Attendance_AsIs">
+    <bpmn:participant id="Participant_Process_Attendance_AsIs" name="Vận hành Lớp học Hiện tại (As-Is)" processRef="Process_Attendance_AsIs" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Attendance_AsIs" name="Lớp học: Điểm danh, Học bù &amp; Đối soát Thù lao (As-Is)" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_Attendance_AsIs">
+      <bpmn:lane id="Lane_P3_Teacher" name="Giáo viên">
+        <bpmn:flowNodeRef>Start_P3_AsIs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P3_Leave</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P3_RollCall</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P3_ConfirmPay</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P3_Ops" name="Bộ phận Giáo vụ">
+        <bpmn:flowNodeRef>UT_P3_FindSub</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P3_ArrangeMakeup</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P3_Payroll" name="Kế toán Lương">
+        <bpmn:flowNodeRef>UT_P3_CountSessions</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P3_AsIs</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_P3_AsIs" name="Trước / Sau buổi học">
+      <bpmn:outgoing>F3_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="GW_P3_Leave" name="GV báo nghỉ?">
+      <bpmn:incoming>F3_1</bpmn:incoming>
+      <bpmn:outgoing>F3_2</bpmn:outgoing>
+      <bpmn:outgoing>F3_3</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UT_P3_FindSub" name="Tra Excel &amp; gọi điện tìm người dạy thay">
+      <bpmn:incoming>F3_2</bpmn:incoming>
+      <bpmn:outgoing>F3_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P3_RollCall" name="Điểm danh giấy &amp; gửi danh sách vắng">
+      <bpmn:incoming>F3_3</bpmn:incoming>
+      <bpmn:incoming>F3_4</bpmn:incoming>
+      <bpmn:outgoing>F3_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P3_ArrangeMakeup" name="Nhắn tin từng phụ huynh xếp lịch học bù">
+      <bpmn:incoming>F3_5</bpmn:incoming>
+      <bpmn:outgoing>F3_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P3_CountSessions" name="Cuối tháng cộng tay số buổi dạy trên Excel">
+      <bpmn:incoming>F3_6</bpmn:incoming>
+      <bpmn:outgoing>F3_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P3_ConfirmPay" name="Gửi bảng lương &amp; xử lý khiếu nại qua chat">
+      <bpmn:incoming>F3_7</bpmn:incoming>
+      <bpmn:outgoing>F3_8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_P3_AsIs" name="Chốt chi trả lương">
+      <bpmn:incoming>F3_8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F3_1" sourceRef="Start_P3_AsIs" targetRef="GW_P3_Leave" />
+    <bpmn:sequenceFlow id="F3_2" name="Có báo nghỉ" sourceRef="GW_P3_Leave" targetRef="UT_P3_FindSub" />
+    <bpmn:sequenceFlow id="F3_3" name="Dạy bình thường" sourceRef="GW_P3_Leave" targetRef="UT_P3_RollCall" />
+    <bpmn:sequenceFlow id="F3_4" sourceRef="UT_P3_FindSub" targetRef="UT_P3_RollCall" />
+    <bpmn:sequenceFlow id="F3_5" sourceRef="UT_P3_RollCall" targetRef="UT_P3_ArrangeMakeup" />
+    <bpmn:sequenceFlow id="F3_6" sourceRef="UT_P3_ArrangeMakeup" targetRef="UT_P3_CountSessions" />
+    <bpmn:sequenceFlow id="F3_7" sourceRef="UT_P3_CountSessions" targetRef="UT_P3_ConfirmPay" />
+    <bpmn:sequenceFlow id="F3_8" sourceRef="UT_P3_ConfirmPay" targetRef="End_P3_AsIs" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Attendance_AsIs">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Attendance_AsIs" bpmnElement="Collaboration_Process_Attendance_AsIs">
+      <bpmndi:BPMNShape id="Participant_Process_Attendance_AsIs_di" bpmnElement="Participant_Process_Attendance_AsIs" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1443" height="540" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P3_Teacher_di" bpmnElement="Lane_P3_Teacher" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1413" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P3_Ops_di" bpmnElement="Lane_P3_Ops" isHorizontal="true">
+        <dc:Bounds x="190" y="250" width="1413" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P3_Payroll_di" bpmnElement="Lane_P3_Payroll" isHorizontal="true">
+        <dc:Bounds x="190" y="420" width="1413" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_P3_AsIs_di" bpmnElement="Start_P3_AsIs">
+        <dc:Bounds x="232" y="157" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P3_Leave_di" bpmnElement="GW_P3_Leave">
+        <dc:Bounds x="400" y="150" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P3_FindSub_di" bpmnElement="UT_P3_FindSub">
+        <dc:Bounds x="545" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P3_RollCall_di" bpmnElement="UT_P3_RollCall">
+        <dc:Bounds x="720" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P3_ArrangeMakeup_di" bpmnElement="UT_P3_ArrangeMakeup">
+        <dc:Bounds x="895" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P3_CountSessions_di" bpmnElement="UT_P3_CountSessions">
+        <dc:Bounds x="1070" y="475" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P3_ConfirmPay_di" bpmnElement="UT_P3_ConfirmPay">
+        <dc:Bounds x="1245" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P3_AsIs_di" bpmnElement="End_P3_AsIs">
+        <dc:Bounds x="1457" y="497" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F3_1_di" bpmnElement="F3_1">
+        <di:waypoint x="268" y="175" />
+        <di:waypoint x="400" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_2_di" bpmnElement="F3_2">
+        <di:waypoint x="450" y="175" />
+        <di:waypoint x="498" y="175" />
+        <di:waypoint x="498" y="345" />
+        <di:waypoint x="545" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_3_di" bpmnElement="F3_3">
+        <di:waypoint x="450" y="175" />
+        <di:waypoint x="450" y="100" />
+        <di:waypoint x="775" y="100" />
+        <di:waypoint x="775" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_4_di" bpmnElement="F3_4">
+        <di:waypoint x="655" y="345" />
+        <di:waypoint x="688" y="345" />
+        <di:waypoint x="688" y="175" />
+        <di:waypoint x="720" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_5_di" bpmnElement="F3_5">
+        <di:waypoint x="830" y="175" />
+        <di:waypoint x="862" y="175" />
+        <di:waypoint x="862" y="345" />
+        <di:waypoint x="895" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_6_di" bpmnElement="F3_6">
+        <di:waypoint x="1005" y="345" />
+        <di:waypoint x="1038" y="345" />
+        <di:waypoint x="1038" y="515" />
+        <di:waypoint x="1070" y="515" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_7_di" bpmnElement="F3_7">
+        <di:waypoint x="1180" y="515" />
+        <di:waypoint x="1212" y="515" />
+        <di:waypoint x="1212" y="175" />
+        <di:waypoint x="1245" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_8_di" bpmnElement="F3_8">
+        <di:waypoint x="1355" y="175" />
+        <di:waypoint x="1406" y="175" />
+        <di:waypoint x="1406" y="515" />
+        <di:waypoint x="1457" y="515" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

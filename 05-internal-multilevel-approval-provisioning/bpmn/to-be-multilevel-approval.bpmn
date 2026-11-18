@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_Process_Approval_ToBe" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_Process_Approval_ToBe">
+    <bpmn:participant id="Participant_External_Process_Approval_ToBe" name="IAM / Active Directory, Quản lý Tài sản &amp; Ngân hàng Doanh nghiệp" />
+    <bpmn:participant id="Participant_Process_Approval_ToBe" name="Hệ thống Phê duyệt Đa cấp &amp; Cấp phát Tự động (To-Be)" processRef="Process_Approval_ToBe" />
+    <bpmn:messageFlow id="MF5_1" name="IAM / Asset / Bank API" sourceRef="ST_P5_Provision" targetRef="Participant_External_Process_Approval_ToBe" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Approval_ToBe" name="Quản trị nội bộ: Phê duyệt Đa cấp &amp; Cấp phát Tự động (To-Be)" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:laneSet id="LaneSet_Process_Approval_ToBe">
+      <bpmn:lane id="Lane_P5_Req" name="Nhân viên Đề xuất">
+        <bpmn:flowNodeRef>Start_P5_Form</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P5_Approvers" name="Cấp Quản lý Phê duyệt (TBP / KTT / BGĐ)">
+        <bpmn:flowNodeRef>Sub_P5_TierApproval</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P5_Exec" name="Hệ thống Điều phối &amp; Thực thi (Camunda + DMN + IAM)">
+        <bpmn:flowNodeRef>BRT_P5_MatrixDMN</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P5_BuildChain</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P5_FinalApproved</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P5_Provision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P5_NotifyOK</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P5_OK</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ST_P5_NotifyReject</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P5_Reject</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_P5_Form" name="Gửi biểu mẫu đề xuất (Camunda Forms)">
+      <bpmn:outgoing>FT5_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:businessRuleTask id="BRT_P5_MatrixDMN" name="DMN Xác định danh sách cấp duyệt theo hạn mức" camunda:resultVariable="approvalPolicy" camunda:decisionRef="Decision_ApprovalMatrix" camunda:mapDecisionResult="singleResult">
+      <bpmn:incoming>FT5_1</bpmn:incoming>
+      <bpmn:outgoing>FT5_2</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:serviceTask id="ST_P5_BuildChain" name="Khởi tạo chuỗi người duyệt &amp; người dự phòng" camunda:type="external" camunda:topic="build-approver-chain">
+      <bpmn:incoming>FT5_2</bpmn:incoming>
+      <bpmn:outgoing>FT5_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="Sub_P5_TierApproval" name="Vòng duyệt từng cấp (Multi-Instance + SLA)">
+      <bpmn:incoming>FT5_3</bpmn:incoming>
+      <bpmn:outgoing>FT5_10</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="${approverList}" camunda:elementVariable="approver">
+        <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">${approved == false}</bpmn:completionCondition>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:startEvent id="SubStart_P5">
+        <bpmn:outgoing>FT5_4</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:userTask id="UT_P5_Approve" name="Quản lý xem xét &amp; phê duyệt" camunda:assignee="${approver.userId}" camunda:formKey="camunda-forms:app:forms/approval-decision.form">
+        <bpmn:incoming>FT5_4</bpmn:incoming>
+        <bpmn:outgoing>FT5_5</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:boundaryEvent id="BE_P5_Remind24H" name="24h (Nhắc định kỳ)" cancelActivity="false" attachedToRef="UT_P5_Approve">
+        <bpmn:outgoing>FT5_6</bpmn:outgoing>
+        <bpmn:timerEventDefinition id="TimerDef_BE_P5_Remind24H">
+          <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R/PT24H</bpmn:timeCycle>
+        </bpmn:timerEventDefinition>
+      </bpmn:boundaryEvent>
+      <bpmn:boundaryEvent id="BE_P5_Escalate48H" name="48h (Leo thang SLA)" cancelActivity="true" attachedToRef="UT_P5_Approve">
+        <bpmn:outgoing>FT5_8</bpmn:outgoing>
+        <bpmn:timerEventDefinition id="TimerDef_BE_P5_Escalate48H">
+          <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT48H</bpmn:timeDuration>
+        </bpmn:timerEventDefinition>
+      </bpmn:boundaryEvent>
+      <bpmn:serviceTask id="ST_P5_SendRemind" name="Gửi thông báo nhắc duyệt" camunda:type="external" camunda:topic="send-sla-reminder">
+        <bpmn:incoming>FT5_6</bpmn:incoming>
+        <bpmn:outgoing>FT5_7</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:endEvent id="End_P5_Remind">
+        <bpmn:incoming>FT5_7</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:userTask id="UT_P5_BackupApprove" name="Người dự phòng phê duyệt thay" camunda:assignee="${approver.backupUserId}" camunda:formKey="camunda-forms:app:forms/approval-decision.form">
+        <bpmn:incoming>FT5_8</bpmn:incoming>
+        <bpmn:outgoing>FT5_9</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:endEvent id="SubEnd_P5">
+        <bpmn:incoming>FT5_5</bpmn:incoming>
+        <bpmn:incoming>FT5_9</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="FT5_4" sourceRef="SubStart_P5" targetRef="UT_P5_Approve" />
+      <bpmn:sequenceFlow id="FT5_5" sourceRef="UT_P5_Approve" targetRef="SubEnd_P5" />
+      <bpmn:sequenceFlow id="FT5_6" sourceRef="BE_P5_Remind24H" targetRef="ST_P5_SendRemind" />
+      <bpmn:sequenceFlow id="FT5_7" sourceRef="ST_P5_SendRemind" targetRef="End_P5_Remind" />
+      <bpmn:sequenceFlow id="FT5_8" sourceRef="BE_P5_Escalate48H" targetRef="UT_P5_BackupApprove" />
+      <bpmn:sequenceFlow id="FT5_9" sourceRef="UT_P5_BackupApprove" targetRef="SubEnd_P5" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="GW_P5_FinalApproved" name="Được phê duyệt?">
+      <bpmn:incoming>FT5_10</bpmn:incoming>
+      <bpmn:outgoing>FT5_11</bpmn:outgoing>
+      <bpmn:outgoing>FT5_14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ST_P5_Provision" name="Gọi API cấp quyền IAM / tài sản / lệnh chi" camunda:type="external" camunda:topic="execute-provisioning-api">
+      <bpmn:incoming>FT5_11</bpmn:incoming>
+      <bpmn:outgoing>FT5_12</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ST_P5_NotifyOK" name="Thông báo hoàn tất cấp phát" camunda:type="external" camunda:topic="notify-request-completed">
+      <bpmn:incoming>FT5_12</bpmn:incoming>
+      <bpmn:outgoing>FT5_13</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_P5_OK" name="Hoàn tất cấp phát">
+      <bpmn:incoming>FT5_13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ST_P5_NotifyReject" name="Thông báo yêu cầu bị từ chối" camunda:type="external" camunda:topic="notify-request-rejected">
+      <bpmn:incoming>FT5_14</bpmn:incoming>
+      <bpmn:outgoing>FT5_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_P5_Reject" name="Kết thúc (Từ chối)">
+      <bpmn:incoming>FT5_15</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="FT5_1" sourceRef="Start_P5_Form" targetRef="BRT_P5_MatrixDMN" />
+    <bpmn:sequenceFlow id="FT5_2" sourceRef="BRT_P5_MatrixDMN" targetRef="ST_P5_BuildChain" />
+    <bpmn:sequenceFlow id="FT5_3" sourceRef="ST_P5_BuildChain" targetRef="Sub_P5_TierApproval" />
+    <bpmn:sequenceFlow id="FT5_10" sourceRef="Sub_P5_TierApproval" targetRef="GW_P5_FinalApproved" />
+    <bpmn:sequenceFlow id="FT5_11" name="Approved" sourceRef="GW_P5_FinalApproved" targetRef="ST_P5_Provision">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="FT5_12" sourceRef="ST_P5_Provision" targetRef="ST_P5_NotifyOK" />
+    <bpmn:sequenceFlow id="FT5_13" sourceRef="ST_P5_NotifyOK" targetRef="End_P5_OK" />
+    <bpmn:sequenceFlow id="FT5_14" name="Rejected" sourceRef="GW_P5_FinalApproved" targetRef="ST_P5_NotifyReject">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="FT5_15" sourceRef="ST_P5_NotifyReject" targetRef="End_P5_Reject" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Approval_ToBe">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Approval_ToBe" bpmnElement="Collaboration_Process_Approval_ToBe">
+      <bpmndi:BPMNShape id="Participant_External_Process_Approval_ToBe_di" bpmnElement="Participant_External_Process_Approval_ToBe" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="2073" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Process_Approval_ToBe_di" bpmnElement="Participant_Process_Approval_ToBe" isHorizontal="true">
+        <dc:Bounds x="160" y="170" width="2073" height="875" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P5_Req_di" bpmnElement="Lane_P5_Req" isHorizontal="true">
+        <dc:Bounds x="190" y="170" width="2043" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P5_Approvers_di" bpmnElement="Lane_P5_Approvers" isHorizontal="true">
+        <dc:Bounds x="190" y="340" width="2043" height="380" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P5_Exec_di" bpmnElement="Lane_P5_Exec" isHorizontal="true">
+        <dc:Bounds x="190" y="720" width="2043" height="325" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_P5_Form_di" bpmnElement="Start_P5_Form">
+        <dc:Bounds x="232" y="247" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BRT_P5_MatrixDMN_di" bpmnElement="BRT_P5_MatrixDMN">
+        <dc:Bounds x="370" y="842" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P5_BuildChain_di" bpmnElement="ST_P5_BuildChain">
+        <dc:Bounds x="545" y="842" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_P5_TierApproval_di" bpmnElement="Sub_P5_TierApproval" isExpanded="true">
+        <dc:Bounds x="775" y="372" width="630" height="275" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubStart_P5_di" bpmnElement="SubStart_P5">
+        <dc:Bounds x="807" y="429" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P5_Approve_di" bpmnElement="UT_P5_Approve">
+        <dc:Bounds x="930" y="407" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BE_P5_Remind24H_di" bpmnElement="BE_P5_Remind24H">
+        <dc:Bounds x="944" y="469" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BE_P5_Escalate48H_di" bpmnElement="BE_P5_Escalate48H">
+        <dc:Bounds x="994" y="469" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P5_SendRemind_di" bpmnElement="ST_P5_SendRemind">
+        <dc:Bounds x="915" y="528" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P5_Remind_di" bpmnElement="End_P5_Remind">
+        <dc:Bounds x="1082" y="550" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P5_BackupApprove_di" bpmnElement="UT_P5_BackupApprove">
+        <dc:Bounds x="1162" y="528" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubEnd_P5_di" bpmnElement="SubEnd_P5">
+        <dc:Bounds x="1329" y="429" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P5_FinalApproved_di" bpmnElement="GW_P5_FinalApproved">
+        <dc:Bounds x="1520" y="858" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P5_Provision_di" bpmnElement="ST_P5_Provision">
+        <dc:Bounds x="1682" y="775" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P5_NotifyOK_di" bpmnElement="ST_P5_NotifyOK">
+        <dc:Bounds x="1875" y="775" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P5_OK_di" bpmnElement="End_P5_OK">
+        <dc:Bounds x="2087" y="797" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ST_P5_NotifyReject_di" bpmnElement="ST_P5_NotifyReject">
+        <dc:Bounds x="1682" y="937" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P5_Reject_di" bpmnElement="End_P5_Reject">
+        <dc:Bounds x="1912" y="959" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="FT5_1_di" bpmnElement="FT5_1">
+        <di:waypoint x="268" y="265" />
+        <di:waypoint x="319" y="265" />
+        <di:waypoint x="319" y="882" />
+        <di:waypoint x="370" y="882" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_2_di" bpmnElement="FT5_2">
+        <di:waypoint x="480" y="882" />
+        <di:waypoint x="545" y="882" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_3_di" bpmnElement="FT5_3">
+        <di:waypoint x="655" y="882" />
+        <di:waypoint x="715" y="882" />
+        <di:waypoint x="715" y="510" />
+        <di:waypoint x="775" y="510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_4_di" bpmnElement="FT5_4">
+        <di:waypoint x="843" y="447" />
+        <di:waypoint x="930" y="447" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_5_di" bpmnElement="FT5_5">
+        <di:waypoint x="1040" y="447" />
+        <di:waypoint x="1329" y="447" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_6_di" bpmnElement="FT5_6">
+        <di:waypoint x="962" y="505" />
+        <di:waypoint x="962" y="516" />
+        <di:waypoint x="970" y="516" />
+        <di:waypoint x="970" y="528" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_7_di" bpmnElement="FT5_7">
+        <di:waypoint x="1025" y="568" />
+        <di:waypoint x="1082" y="568" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_8_di" bpmnElement="FT5_8">
+        <di:waypoint x="1012" y="505" />
+        <di:waypoint x="1012" y="568" />
+        <di:waypoint x="1162" y="568" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_9_di" bpmnElement="FT5_9">
+        <di:waypoint x="1272" y="568" />
+        <di:waypoint x="1347" y="568" />
+        <di:waypoint x="1347" y="465" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_10_di" bpmnElement="FT5_10">
+        <di:waypoint x="1405" y="510" />
+        <di:waypoint x="1462" y="510" />
+        <di:waypoint x="1462" y="883" />
+        <di:waypoint x="1520" y="883" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_11_di" bpmnElement="FT5_11">
+        <di:waypoint x="1570" y="883" />
+        <di:waypoint x="1626" y="883" />
+        <di:waypoint x="1626" y="815" />
+        <di:waypoint x="1682" y="815" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_12_di" bpmnElement="FT5_12">
+        <di:waypoint x="1792" y="815" />
+        <di:waypoint x="1875" y="815" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_13_di" bpmnElement="FT5_13">
+        <di:waypoint x="1985" y="815" />
+        <di:waypoint x="2087" y="815" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_14_di" bpmnElement="FT5_14">
+        <di:waypoint x="1570" y="883" />
+        <di:waypoint x="1626" y="883" />
+        <di:waypoint x="1626" y="977" />
+        <di:waypoint x="1682" y="977" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FT5_15_di" bpmnElement="FT5_15">
+        <di:waypoint x="1792" y="977" />
+        <di:waypoint x="1912" y="977" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF5_1_di" bpmnElement="MF5_1">
+        <di:waypoint x="1737" y="775" />
+        <di:waypoint x="1737" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

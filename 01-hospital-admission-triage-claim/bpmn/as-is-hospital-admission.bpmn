@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_Process_Hospital_AsIs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_Process_Hospital_AsIs">
+    <bpmn:participant id="Participant_Process_Hospital_AsIs" name="Quy trình Bệnh viện Hiện tại (As-Is)" processRef="Process_Hospital_AsIs" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Hospital_AsIs" name="Bệnh viện: Tiếp nhận, Phân luồng &amp; Đối soát Bảo hiểm (As-Is)" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_Hospital_AsIs">
+      <bpmn:lane id="Lane_P1_Reception" name="Quầy Tiếp nhận &amp; Thu ngân">
+        <bpmn:flowNodeRef>Start_P1_AsIs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P1_CheckCard</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P1_PayDeposit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P1_FinalPay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P1_AsIs</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P1_Nurse" name="Điều dưỡng Phân luồng">
+        <bpmn:flowNodeRef>MT_P1_MeasureVital</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P1_ManualTriage</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P1_Doctor" name="Bác sĩ Khám &amp; Cận lâm sàng">
+        <bpmn:flowNodeRef>UT_P1_ExamOrder</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P1_LabManual</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P1_Discharge</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P1_Insurance" name="Giám định BHYT / Bảo hiểm">
+        <bpmn:flowNodeRef>UT_P1_ManualClaim</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P1_ClaimOK</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_P1_AsIs" name="Bệnh nhân đến quầy">
+      <bpmn:outgoing>F1_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="UT_P1_CheckCard" name="Kiểm tra CCCD/BHYT giấy &amp; nhập tay vào HIS">
+      <bpmn:incoming>F1_1</bpmn:incoming>
+      <bpmn:outgoing>F1_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:manualTask id="MT_P1_MeasureVital" name="Đo sinh hiệu &amp; ghi phiếu giấy">
+      <bpmn:incoming>F1_2</bpmn:incoming>
+      <bpmn:outgoing>F1_3</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:userTask id="UT_P1_ManualTriage" name="Đánh giá cảm tính &amp; phát số thứ tự giấy">
+      <bpmn:incoming>F1_3</bpmn:incoming>
+      <bpmn:outgoing>F1_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P1_ExamOrder" name="Khám lâm sàng &amp; viết giấy chỉ định XN/CĐHA">
+      <bpmn:incoming>F1_4</bpmn:incoming>
+      <bpmn:outgoing>F1_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P1_PayDeposit" name="Bệnh nhân xếp hàng đóng tiền tạm ứng">
+      <bpmn:incoming>F1_5</bpmn:incoming>
+      <bpmn:outgoing>F1_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P1_LabManual" name="Nhập tay chỉ định XN/CĐHA &amp; trả kết quả giấy">
+      <bpmn:incoming>F1_6</bpmn:incoming>
+      <bpmn:outgoing>F1_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P1_Discharge" name="Đọc kết quả giấy &amp; ra y lệnh xuất viện">
+      <bpmn:incoming>F1_7</bpmn:incoming>
+      <bpmn:outgoing>F1_8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P1_ManualClaim" name="Nhập tay mã ICD-10 &amp; đối chiếu bảng kê BHYT">
+      <bpmn:incoming>F1_8</bpmn:incoming>
+      <bpmn:incoming>F1_11</bpmn:incoming>
+      <bpmn:outgoing>F1_9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_P1_ClaimOK" name="Hồ sơ hợp lệ?">
+      <bpmn:incoming>F1_9</bpmn:incoming>
+      <bpmn:outgoing>F1_10</bpmn:outgoing>
+      <bpmn:outgoing>F1_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UT_P1_FinalPay" name="Thu ngân tất toán &amp; xuất hóa đơn">
+      <bpmn:incoming>F1_10</bpmn:incoming>
+      <bpmn:outgoing>F1_12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_P1_AsIs" name="Hoàn tất xuất viện">
+      <bpmn:incoming>F1_12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F1_1" sourceRef="Start_P1_AsIs" targetRef="UT_P1_CheckCard" />
+    <bpmn:sequenceFlow id="F1_2" sourceRef="UT_P1_CheckCard" targetRef="MT_P1_MeasureVital" />
+    <bpmn:sequenceFlow id="F1_3" sourceRef="MT_P1_MeasureVital" targetRef="UT_P1_ManualTriage" />
+    <bpmn:sequenceFlow id="F1_4" sourceRef="UT_P1_ManualTriage" targetRef="UT_P1_ExamOrder" />
+    <bpmn:sequenceFlow id="F1_5" sourceRef="UT_P1_ExamOrder" targetRef="UT_P1_PayDeposit" />
+    <bpmn:sequenceFlow id="F1_6" sourceRef="UT_P1_PayDeposit" targetRef="UT_P1_LabManual" />
+    <bpmn:sequenceFlow id="F1_7" sourceRef="UT_P1_LabManual" targetRef="UT_P1_Discharge" />
+    <bpmn:sequenceFlow id="F1_8" sourceRef="UT_P1_Discharge" targetRef="UT_P1_ManualClaim" />
+    <bpmn:sequenceFlow id="F1_9" sourceRef="UT_P1_ManualClaim" targetRef="GW_P1_ClaimOK" />
+    <bpmn:sequenceFlow id="F1_10" name="Hợp lệ" sourceRef="GW_P1_ClaimOK" targetRef="UT_P1_FinalPay" />
+    <bpmn:sequenceFlow id="F1_11" name="Sai mã / thiếu chứng từ" sourceRef="GW_P1_ClaimOK" targetRef="UT_P1_ManualClaim" />
+    <bpmn:sequenceFlow id="F1_12" sourceRef="UT_P1_FinalPay" targetRef="End_P1_AsIs" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Hospital_AsIs">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Hospital_AsIs" bpmnElement="Collaboration_Process_Hospital_AsIs">
+      <bpmndi:BPMNShape id="Participant_Process_Hospital_AsIs_di" bpmnElement="Participant_Process_Hospital_AsIs" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="2143" height="710" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_Reception_di" bpmnElement="Lane_P1_Reception" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="2113" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_Nurse_di" bpmnElement="Lane_P1_Nurse" isHorizontal="true">
+        <dc:Bounds x="190" y="250" width="2113" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_Doctor_di" bpmnElement="Lane_P1_Doctor" isHorizontal="true">
+        <dc:Bounds x="190" y="420" width="2113" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_Insurance_di" bpmnElement="Lane_P1_Insurance" isHorizontal="true">
+        <dc:Bounds x="190" y="590" width="2113" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_P1_AsIs_di" bpmnElement="Start_P1_AsIs">
+        <dc:Bounds x="232" y="157" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P1_CheckCard_di" bpmnElement="UT_P1_CheckCard">
+        <dc:Bounds x="370" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="MT_P1_MeasureVital_di" bpmnElement="MT_P1_MeasureVital">
+        <dc:Bounds x="545" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P1_ManualTriage_di" bpmnElement="UT_P1_ManualTriage">
+        <dc:Bounds x="720" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P1_ExamOrder_di" bpmnElement="UT_P1_ExamOrder">
+        <dc:Bounds x="895" y="475" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P1_PayDeposit_di" bpmnElement="UT_P1_PayDeposit">
+        <dc:Bounds x="1070" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P1_LabManual_di" bpmnElement="UT_P1_LabManual">
+        <dc:Bounds x="1245" y="475" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P1_Discharge_di" bpmnElement="UT_P1_Discharge">
+        <dc:Bounds x="1420" y="475" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P1_ManualClaim_di" bpmnElement="UT_P1_ManualClaim">
+        <dc:Bounds x="1595" y="645" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P1_ClaimOK_di" bpmnElement="GW_P1_ClaimOK">
+        <dc:Bounds x="1800" y="660" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P1_FinalPay_di" bpmnElement="UT_P1_FinalPay">
+        <dc:Bounds x="1945" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P1_AsIs_di" bpmnElement="End_P1_AsIs">
+        <dc:Bounds x="2157" y="157" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F1_1_di" bpmnElement="F1_1">
+        <di:waypoint x="268" y="175" />
+        <di:waypoint x="370" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_2_di" bpmnElement="F1_2">
+        <di:waypoint x="480" y="175" />
+        <di:waypoint x="512" y="175" />
+        <di:waypoint x="512" y="345" />
+        <di:waypoint x="545" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_3_di" bpmnElement="F1_3">
+        <di:waypoint x="655" y="345" />
+        <di:waypoint x="720" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_4_di" bpmnElement="F1_4">
+        <di:waypoint x="830" y="345" />
+        <di:waypoint x="862" y="345" />
+        <di:waypoint x="862" y="515" />
+        <di:waypoint x="895" y="515" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_5_di" bpmnElement="F1_5">
+        <di:waypoint x="1005" y="515" />
+        <di:waypoint x="1038" y="515" />
+        <di:waypoint x="1038" y="175" />
+        <di:waypoint x="1070" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_6_di" bpmnElement="F1_6">
+        <di:waypoint x="1180" y="175" />
+        <di:waypoint x="1212" y="175" />
+        <di:waypoint x="1212" y="515" />
+        <di:waypoint x="1245" y="515" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_7_di" bpmnElement="F1_7">
+        <di:waypoint x="1355" y="515" />
+        <di:waypoint x="1420" y="515" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_8_di" bpmnElement="F1_8">
+        <di:waypoint x="1530" y="515" />
+        <di:waypoint x="1562" y="515" />
+        <di:waypoint x="1562" y="685" />
+        <di:waypoint x="1595" y="685" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_9_di" bpmnElement="F1_9">
+        <di:waypoint x="1705" y="685" />
+        <di:waypoint x="1800" y="685" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_10_di" bpmnElement="F1_10">
+        <di:waypoint x="1850" y="685" />
+        <di:waypoint x="1898" y="685" />
+        <di:waypoint x="1898" y="175" />
+        <di:waypoint x="1945" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_11_di" bpmnElement="F1_11">
+        <di:waypoint x="1850" y="685" />
+        <di:waypoint x="1850" y="770" />
+        <di:waypoint x="1650" y="770" />
+        <di:waypoint x="1650" y="725" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F1_12_di" bpmnElement="F1_12">
+        <di:waypoint x="2055" y="175" />
+        <di:waypoint x="2157" y="175" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

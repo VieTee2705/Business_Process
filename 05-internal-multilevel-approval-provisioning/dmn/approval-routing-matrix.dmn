@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_ApprovalMatrix" name="Multi-Level Approval Routing Matrix" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="Decision_ApprovalMatrix" name="Phân quyền phê duyệt theo hạn mức &amp; loại yêu cầu" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_Decision_ApprovalMatrix" hitPolicy="FIRST">
+      <input id="In_Type" label="Loại yêu cầu">
+        <inputExpression id="InputExpr_In_Type" typeRef="string">
+          <text>requestType</text>
+        </inputExpression>
+      </input>
+      <input id="In_Amt" label="Giá trị đề xuất (VNĐ)">
+        <inputExpression id="InputExpr_In_Amt" typeRef="long">
+          <text>amountVND</text>
+        </inputExpression>
+      </input>
+      <input id="In_Dept" label="Phòng ban">
+        <inputExpression id="InputExpr_In_Dept" typeRef="string">
+          <text>department</text>
+        </inputExpression>
+      </input>
+      <output id="Out_Tier" label="Số cấp duyệt" name="approvalTier" typeRef="integer" />
+      <output id="Out_Head" label="Cần Trưởng bộ phận?" name="requireDepartmentHead" typeRef="boolean" />
+      <output id="Out_CA" label="Cần Kế toán trưởng?" name="requireChiefAccountant" typeRef="boolean" />
+      <output id="Out_Board" label="Cần Ban Giám đốc?" name="requireBoardDirector" typeRef="boolean" />
+      <output id="Out_SLA" label="SLA mỗi cấp (giờ)" name="slaHours" typeRef="integer" />
+      <rule id="Rule_Decision_ApprovalMatrix_1">
+        <description>Cấp quyền nhạy cảm cần TBP + Giám đốc</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_1_1">
+          <text>&quot;IT_ACCESS&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_1_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_1_3">
+          <text>&quot;SECURITY&quot;</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_1_1">
+          <text>2</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_1_2">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_1_3">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_1_4">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_1_5">
+          <text>24</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ApprovalMatrix_2">
+        <description>Cấp quyền phần mềm chuẩn chỉ cần TBP</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_2_1">
+          <text>&quot;IT_ACCESS&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_2_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_2_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_2_1">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_2_2">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_2_3">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_2_4">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_2_5">
+          <text>24</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ApprovalMatrix_3">
+        <description>Dưới 5 triệu: Trưởng bộ phận duyệt</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_3_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_3_2">
+          <text>&lt; 5000000</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_3_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_3_1">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_3_2">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_3_3">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_3_4">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_3_5">
+          <text>48</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ApprovalMatrix_4">
+        <description>5 - 50 triệu: TBP + Kế toán trưởng</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_4_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_4_2">
+          <text>[5000000..50000000]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_4_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_4_1">
+          <text>2</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_4_2">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_4_3">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_4_4">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_4_5">
+          <text>48</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_ApprovalMatrix_5">
+        <description>Trên 50 triệu: TBP + KTT + Ban Giám đốc</description>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_5_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_5_2">
+          <text>&gt; 50000000</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_ApprovalMatrix_5_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_5_1">
+          <text>3</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_5_2">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_5_3">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_5_4">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_ApprovalMatrix_5_5">
+          <text>48</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_Definitions_ApprovalMatrix">
+      <dmndi:DMNShape id="DMNShape_Decision_ApprovalMatrix" dmnElementRef="Decision_ApprovalMatrix">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

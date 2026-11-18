@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_ClassroomRules" name="Substitute Teacher &amp; Teaching Rate" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="Decision_SubstituteEligibility" name="Lọc giáo viên dạy thay đủ điều kiện" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_Decision_SubstituteEligibility" hitPolicy="COLLECT">
+      <input id="In_Subj" label="Chuyên môn yêu cầu">
+        <inputExpression id="InputExpr_In_Subj" typeRef="string">
+          <text>requiredSubject</text>
+        </inputExpression>
+      </input>
+      <input id="In_Level" label="Cấp độ lớp">
+        <inputExpression id="InputExpr_In_Level" typeRef="string">
+          <text>classLevel</text>
+        </inputExpression>
+      </input>
+      <input id="In_Conflict" label="Trùng lịch ca dạy?">
+        <inputExpression id="InputExpr_In_Conflict" typeRef="boolean">
+          <text>hasScheduleConflict</text>
+        </inputExpression>
+      </input>
+      <output id="Out_Pool" label="Nhóm GV dạy thay" name="substitutePoolGroup" typeRef="string" />
+      <output id="Out_Priority" label="Độ ưu tiên mời" name="invitePriority" typeRef="integer" />
+      <rule id="Rule_Decision_SubstituteEligibility_1">
+        <description>Ưu tiên GV Senior IELTS rảnh lịch</description>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_1_1">
+          <text>&quot;ENGLISH_IELTS&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_1_2">
+          <text>&quot;ADVANCED&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_1_3">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_SubstituteEligibility_1_1">
+          <text>&quot;SENIOR_IELTS_MENTORS&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_SubstituteEligibility_1_2">
+          <text>1</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_SubstituteEligibility_2">
+        <description>GV tiếng Anh rảnh lịch</description>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_2_1">
+          <text>&quot;ENGLISH_IELTS&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_2_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_2_3">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_SubstituteEligibility_2_1">
+          <text>&quot;GENERAL_ENGLISH_TEACHERS&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_SubstituteEligibility_2_2">
+          <text>2</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_SubstituteEligibility_3">
+        <description>GV STEM rảnh lịch</description>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_3_1">
+          <text>&quot;STEM_CODING&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_3_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_3_3">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_SubstituteEligibility_3_1">
+          <text>&quot;STEM_INSTRUCTORS&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_SubstituteEligibility_3_2">
+          <text>1</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_SubstituteEligibility_4">
+        <description>Trùng lịch - loại</description>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_4_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_4_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_SubstituteEligibility_4_3">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_SubstituteEligibility_4_1">
+          <text>&quot;NONE_AVAILABLE&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_SubstituteEligibility_4_2">
+          <text>99</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="Decision_TeachingRate" name="Tính đơn giá thù lao buổi dạy" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_Decision_TeachingRate" hitPolicy="FIRST">
+      <input id="In_Tenure" label="Thâm niên (tháng)">
+        <inputExpression id="InputExpr_In_Tenure" typeRef="integer">
+          <text>teacherTenureMonths</text>
+        </inputExpression>
+      </input>
+      <input id="In_Shift" label="Ca dạy">
+        <inputExpression id="InputExpr_In_Shift" typeRef="string">
+          <text>sessionShift</text>
+        </inputExpression>
+      </input>
+      <input id="In_Att" label="Sĩ số thực tế">
+        <inputExpression id="InputExpr_In_Att" typeRef="integer">
+          <text>actualAttendanceCount</text>
+        </inputExpression>
+      </input>
+      <output id="Out_Base" label="Đơn giá cơ bản (VNĐ)" name="baseRateVND" typeRef="long" />
+      <output id="Out_Bonus" label="Phụ cấp sĩ số/ca (VNĐ)" name="bonusVND" typeRef="long" />
+      <rule id="Rule_Decision_TeachingRate_1">
+        <description>GV thâm niên &gt;=2 năm, ca tối, lớp đông</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_1_1">
+          <text>&gt;= 24</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_1_2">
+          <text>&quot;EVENING&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_1_3">
+          <text>&gt;= 15</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_1_1">
+          <text>450000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_1_2">
+          <text>100000</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TeachingRate_2">
+        <description>GV thâm niên &gt;=2 năm</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_2_1">
+          <text>&gt;= 24</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_2_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_2_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_2_1">
+          <text>450000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_2_2">
+          <text>50000</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TeachingRate_3">
+        <description>GV 1-2 năm, cuối tuần</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_3_1">
+          <text>[12..23]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_3_2">
+          <text>&quot;WEEKEND&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_3_3">
+          <text>&gt;= 12</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_3_1">
+          <text>360000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_3_2">
+          <text>80000</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TeachingRate_4">
+        <description>GV 1-2 năm tiêu chuẩn</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_4_1">
+          <text>[12..23]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_4_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_4_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_4_1">
+          <text>360000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_4_2">
+          <text>0</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_TeachingRate_5">
+        <description>GV mới &lt; 1 năm</description>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_5_1">
+          <text>&lt; 12</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_5_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_TeachingRate_5_3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_5_1">
+          <text>280000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_TeachingRate_5_2">
+          <text>0</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_Definitions_ClassroomRules">
+      <dmndi:DMNShape id="DMNShape_Decision_SubstituteEligibility" dmnElementRef="Decision_SubstituteEligibility">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_Decision_TeachingRate" dmnElementRef="Decision_TeachingRate">
+        <dc:Bounds height="80" width="180" x="400" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

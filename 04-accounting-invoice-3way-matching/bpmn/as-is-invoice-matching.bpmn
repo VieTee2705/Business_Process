@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_Process_Invoice_AsIs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_Process_Invoice_AsIs">
+    <bpmn:participant id="Participant_Process_Invoice_AsIs" name="Quy trình Xử lý Hóa đơn Hiện tại (As-Is)" processRef="Process_Invoice_AsIs" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Invoice_AsIs" name="Kế toán: Xử lý Hóa đơn Đầu vào &amp; Đối chiếu 3 bên (As-Is)" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_Invoice_AsIs">
+      <bpmn:lane id="Lane_P4_AP" name="Kế toán Thanh toán (AP)">
+        <bpmn:flowNodeRef>Start_P4_AsIs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P4_Download</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P4_CheckTax</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P4_MatchPO</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_P4_Match</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UT_P4_ManualEntry</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P4_Warehouse" name="Mua hàng &amp; Kho">
+        <bpmn:flowNodeRef>UT_P4_AskWarehouse</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P4_ChiefAcc" name="Kế toán trưởng">
+        <bpmn:flowNodeRef>UT_P4_SignOff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_P4_AsIs</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_P4_AsIs" name="Nhận email hóa đơn PDF/XML">
+      <bpmn:outgoing>F4_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="UT_P4_Download" name="Tải file &amp; kiểm tra chữ ký số thủ công">
+      <bpmn:incoming>F4_1</bpmn:incoming>
+      <bpmn:outgoing>F4_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P4_CheckTax" name="Tra cứu MST nhà cung cấp trên web TCT">
+      <bpmn:incoming>F4_2</bpmn:incoming>
+      <bpmn:outgoing>F4_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P4_MatchPO" name="In / mở file đối chiếu thủ công với PO &amp; GRN">
+      <bpmn:incoming>F4_3</bpmn:incoming>
+      <bpmn:incoming>F4_7</bpmn:incoming>
+      <bpmn:outgoing>F4_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_P4_Match" name="Khớp dữ liệu?">
+      <bpmn:incoming>F4_4</bpmn:incoming>
+      <bpmn:outgoing>F4_5</bpmn:outgoing>
+      <bpmn:outgoing>F4_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UT_P4_AskWarehouse" name="Gọi điện / email hỏi Kho &amp; NCC giải trình">
+      <bpmn:incoming>F4_6</bpmn:incoming>
+      <bpmn:outgoing>F4_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P4_ManualEntry" name="Nhập tay bút toán vào phần mềm kế toán">
+      <bpmn:incoming>F4_5</bpmn:incoming>
+      <bpmn:outgoing>F4_8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UT_P4_SignOff" name="Trình ký duyệt thanh toán">
+      <bpmn:incoming>F4_8</bpmn:incoming>
+      <bpmn:outgoing>F4_9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_P4_AsIs" name="Lên lịch thanh toán">
+      <bpmn:incoming>F4_9</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F4_1" sourceRef="Start_P4_AsIs" targetRef="UT_P4_Download" />
+    <bpmn:sequenceFlow id="F4_2" sourceRef="UT_P4_Download" targetRef="UT_P4_CheckTax" />
+    <bpmn:sequenceFlow id="F4_3" sourceRef="UT_P4_CheckTax" targetRef="UT_P4_MatchPO" />
+    <bpmn:sequenceFlow id="F4_4" sourceRef="UT_P4_MatchPO" targetRef="GW_P4_Match" />
+    <bpmn:sequenceFlow id="F4_5" name="Khớp" sourceRef="GW_P4_Match" targetRef="UT_P4_ManualEntry" />
+    <bpmn:sequenceFlow id="F4_6" name="Lệch số liệu" sourceRef="GW_P4_Match" targetRef="UT_P4_AskWarehouse" />
+    <bpmn:sequenceFlow id="F4_7" sourceRef="UT_P4_AskWarehouse" targetRef="UT_P4_MatchPO" />
+    <bpmn:sequenceFlow id="F4_8" sourceRef="UT_P4_ManualEntry" targetRef="UT_P4_SignOff" />
+    <bpmn:sequenceFlow id="F4_9" sourceRef="UT_P4_SignOff" targetRef="End_P4_AsIs" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Invoice_AsIs">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Invoice_AsIs" bpmnElement="Collaboration_Process_Invoice_AsIs">
+      <bpmndi:BPMNShape id="Participant_Process_Invoice_AsIs_di" bpmnElement="Participant_Process_Invoice_AsIs" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1443" height="540" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P4_AP_di" bpmnElement="Lane_P4_AP" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1413" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P4_Warehouse_di" bpmnElement="Lane_P4_Warehouse" isHorizontal="true">
+        <dc:Bounds x="190" y="250" width="1413" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P4_ChiefAcc_di" bpmnElement="Lane_P4_ChiefAcc" isHorizontal="true">
+        <dc:Bounds x="190" y="420" width="1413" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_P4_AsIs_di" bpmnElement="Start_P4_AsIs">
+        <dc:Bounds x="232" y="157" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P4_Download_di" bpmnElement="UT_P4_Download">
+        <dc:Bounds x="370" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P4_CheckTax_di" bpmnElement="UT_P4_CheckTax">
+        <dc:Bounds x="545" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P4_MatchPO_di" bpmnElement="UT_P4_MatchPO">
+        <dc:Bounds x="720" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_P4_Match_di" bpmnElement="GW_P4_Match">
+        <dc:Bounds x="925" y="150" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P4_AskWarehouse_di" bpmnElement="UT_P4_AskWarehouse">
+        <dc:Bounds x="895" y="305" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P4_ManualEntry_di" bpmnElement="UT_P4_ManualEntry">
+        <dc:Bounds x="1070" y="135" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UT_P4_SignOff_di" bpmnElement="UT_P4_SignOff">
+        <dc:Bounds x="1245" y="475" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_P4_AsIs_di" bpmnElement="End_P4_AsIs">
+        <dc:Bounds x="1457" y="497" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F4_1_di" bpmnElement="F4_1">
+        <di:waypoint x="268" y="175" />
+        <di:waypoint x="370" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_2_di" bpmnElement="F4_2">
+        <di:waypoint x="480" y="175" />
+        <di:waypoint x="545" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_3_di" bpmnElement="F4_3">
+        <di:waypoint x="655" y="175" />
+        <di:waypoint x="720" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_4_di" bpmnElement="F4_4">
+        <di:waypoint x="830" y="175" />
+        <di:waypoint x="925" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_5_di" bpmnElement="F4_5">
+        <di:waypoint x="975" y="175" />
+        <di:waypoint x="1070" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_6_di" bpmnElement="F4_6">
+        <di:waypoint x="950" y="200" />
+        <di:waypoint x="950" y="305" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_7_di" bpmnElement="F4_7">
+        <di:waypoint x="1005" y="345" />
+        <di:waypoint x="1005" y="385" />
+        <di:waypoint x="775" y="385" />
+        <di:waypoint x="775" y="215" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_8_di" bpmnElement="F4_8">
+        <di:waypoint x="1180" y="175" />
+        <di:waypoint x="1212" y="175" />
+        <di:waypoint x="1212" y="515" />
+        <di:waypoint x="1245" y="515" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_9_di" bpmnElement="F4_9">
+        <di:waypoint x="1355" y="515" />
+        <di:waypoint x="1457" y="515" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

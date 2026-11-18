@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_InvoiceTolerance" name="3-Way Matching Tolerance" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <decision id="Decision_InvoiceTolerance" name="Đánh giá đối chiếu 3 bên &amp; Ngưỡng sai số" camunda:historyTimeToLive="180">
+    <decisionTable id="DecisionTable_Decision_InvoiceTolerance" hitPolicy="FIRST">
+      <input id="In_Grn" label="Trạng thái Phiếu nhập kho (GRN)">
+        <inputExpression id="InputExpr_In_Grn" typeRef="string">
+          <text>grnStatus</text>
+        </inputExpression>
+      </input>
+      <input id="In_QtyVar" label="Chênh lệch số lượng">
+        <inputExpression id="InputExpr_In_QtyVar" typeRef="integer">
+          <text>qtyVariance</text>
+        </inputExpression>
+      </input>
+      <input id="In_PriceVar" label="Chênh lệch đơn giá (%)">
+        <inputExpression id="InputExpr_In_PriceVar" typeRef="double">
+          <text>priceVariancePercent</text>
+        </inputExpression>
+      </input>
+      <input id="In_Total" label="Tổng tiền hóa đơn (VNĐ)">
+        <inputExpression id="InputExpr_In_Total" typeRef="long">
+          <text>invoiceTotalVND</text>
+        </inputExpression>
+      </input>
+      <output id="Out_Res" label="Kết quả đối chiếu" name="matchingResult" typeRef="string" />
+      <output id="Out_STP" label="Cho phép STP tự động?" name="allowStp" typeRef="boolean" />
+      <output id="Out_Reason" label="Lý do / Ghi chú" name="exceptionReason" typeRef="string" />
+      <rule id="Rule_Decision_InvoiceTolerance_1">
+        <description>Chưa nhập kho không được tự động chi</description>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_1_1">
+          <text>&quot;MISSING&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_1_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_1_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_1_4">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_1_1">
+          <text>&quot;MANUAL_EXCEPTION&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_1_2">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_1_3">
+          <text>&quot;Chưa có Phiếu nhập kho (GRN)&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_InvoiceTolerance_2">
+        <description>Cần kế toán xác nhận giao từng phần</description>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_2_1">
+          <text>&quot;PARTIAL&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_2_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_2_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_2_4">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_2_1">
+          <text>&quot;MANUAL_EXCEPTION&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_2_2">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_2_3">
+          <text>&quot;Mới nhập kho một phần&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_InvoiceTolerance_3">
+        <description>Lệch số lượng</description>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_3_1">
+          <text>&quot;COMPLETED&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_3_2">
+          <text>!= 0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_3_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_3_4">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_3_1">
+          <text>&quot;MANUAL_EXCEPTION&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_3_2">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_3_3">
+          <text>&quot;Sai lệch số lượng so với PO/GRN&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_InvoiceTolerance_4">
+        <description>Straight-Through Processing chuẩn</description>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_4_1">
+          <text>&quot;COMPLETED&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_4_2">
+          <text>0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_4_3">
+          <text>0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_4_4">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_4_1">
+          <text>&quot;AUTO_MATCH&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_4_2">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_4_3">
+          <text>&quot;Khớp 100% PO - GRN - Hóa đơn&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_InvoiceTolerance_5">
+        <description>Cho phép làm tròn VAT/tỷ giá nhỏ</description>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_5_1">
+          <text>&quot;COMPLETED&quot;</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_5_2">
+          <text>0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_5_3">
+          <text>[0.01..0.5]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_5_4">
+          <text>&lt;= 50000000</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_5_1">
+          <text>&quot;MINOR_VARIANCE_APPROVED&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_5_2">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_5_3">
+          <text>&quot;Sai số làm tròn trong ngưỡng &lt;= 0.5%&quot;</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Decision_InvoiceTolerance_6">
+        <description>Mặc định đẩy về kế toán kiểm tra</description>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_6_1">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_6_2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_6_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_Rule_Decision_InvoiceTolerance_6_4">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_6_1">
+          <text>&quot;MANUAL_EXCEPTION&quot;</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_6_2">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpr_Rule_Decision_InvoiceTolerance_6_3">
+          <text>&quot;Vượt ngưỡng sai số hoặc giá trị lớn&quot;</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_Definitions_InvoiceTolerance">
+      <dmndi:DMNShape id="DMNShape_Decision_InvoiceTolerance" dmnElementRef="Decision_InvoiceTolerance">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

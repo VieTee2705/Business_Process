@@ -1,0 +1,4 @@
+* text=auto
+*.md text eol=lf
+*.bpmn text eol=lf
+*.dmn text eol=lf
