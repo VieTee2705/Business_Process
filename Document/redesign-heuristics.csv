@@ -1,0 +1,13 @@
+Code,Level,Heuristic_EN,Heuristic_VI,Variant,Time,Cost,Quality,Flexibility,Description_And_Example
+H1,Task-level,Task elimination,Loại bỏ tác vụ,Eliminate NVA / Controls,+,+/-,-,,"Bỏ bước NVA (forward, send/receive); giảm duyệt tay bằng statistical control hoặc miễn duyệt đơn nhỏ (< $500)."
+H2,Task-level,Task composition,Gộp tác vụ,Composition,+,+/-,,+,"Gộp 2 tác vụ liên tiếp để giảm handover & context switch (VD: gộp Kiểm tra nhu cầu + Kiểm tra ngân sách)."
+H2,Task-level,Task decomposition,Tách tác vụ,Decomposition,-,+, ,-,"Tách tác vụ lớn giao cho chuyên viên chuyên biệt (VD: tách Lập báo giá thành BOM + Kế hoạch SX + Ước tính chi phí)."
+H3,Task-level,Triage,Phân loại / Điều phối tác vụ,Specialization,+,+/-,,-,"Tách 1 tác vụ chung thành nhiều nhánh chuyên biệt (VD: duyệt mua nhỏ / vừa / lớn)."
+H3,Task-level,Triage,Phân loại / Điều phối tác vụ,Generalization,-,+/-,,+,"Gộp nhiều tác vụ tương tự thành 1 tác vụ chung (VD: gộp lập báo giá cho 2 dòng sản phẩm)."
+H4,Flow-level,Re-sequencing,Sắp xếp lại trình tự,Knock-out first / Postpone expensive,+,+,,,"Đưa kiểm tra loại sớm (knock-out rate cao) lên đầu; đẩy bước tốn kém xuống sau để tránh over-processing."
+H5,Flow-level,Parallelism enhancement,Tăng cường song song hóa,Parallelize tasks,+,-,,,"Chạy đồng thời các tác vụ độc lập (VD: duyệt ngân sách song song duyệt nhu cầu) để giảm Cycle Time nhưng tăng chi phí phối hợp."
+H6,Process-level,Process specialization,Chuyên biệt hóa quy trình,Split process,,+/-,+/-,-,"Tách 1 quy trình thành nhiều quy trình theo khách hàng/mùa/loại hàng (VD: Direct vs Indirect procurement; mùa cao điểm vs thấp điểm)."
+H6,Process-level,Process standardization,Chuẩn hóa quy trình,Merge processes,,+,+/-,+,"Gộp nhiều quy trình tương đồng và gom chung nguồn lực (VD: gộp xử lý bồi thường xe giữa các thương hiệu trong tập đoàn)."
+H7,Process-level,Resource optimization,Tối ưu hóa nguồn lực,Pool / Chaining / Batching,+,+,,+/-,"Gom pool tập trung như ở chung 1 phòng; giao việc đúng sở trường; ưu tiên chuyên viên trước; giảm setup bằng Chaining (tuần tự) hoặc Batching (gom lô)."
+H8,Process-level,Communication optimization,Tối ưu hóa giao tiếp,Complete-Kit & Sync/Async,+,+/-,+,-,"Giảm số lần tương tác; dùng đồng bộ (synchronous) cho lỗi nhỏ, bất đồng bộ (asynchronous) cho thông báo/lỗi lớn; áp dụng Complete-Kit (đủ hồ sơ mới bắt đầu)."
+H9,Process-level,Automation,Tự động hóa,Data/Network/Tracking/BRMS/BPMS,+,+/-,+/-,-,"CSDL dùng chung, Self-service portal, RFID/QR/GPS, Business Rules (DMN/BRMS), RPA và BPMS để giảm nhập liệu trùng & tăng tốc."
